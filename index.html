@@ -92,7 +92,7 @@
             overflow-x: auto;
             scrollbar-width: none;
             -webkit-overflow-scrolling: touch;
-            min-height: 64px; /* Чтобы не прыгало при удалении */
+            min-height: 64px;
         }
         .history-strip::-webkit-scrollbar { display: none; }
 
@@ -104,11 +104,10 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
             cursor: pointer;
             transition: transform 0.1s, opacity 0.2s;
-            touch-action: pan-x; /* Позволяем скроллить, но не выделять */
+            touch-action: pan-x; 
         }
         .history-item:active { transform: scale(0.9); }
 
-        /* Состояние перетаскивания */
         .history-item.dragging {
             position: fixed !important;
             z-index: 100 !important;
@@ -133,8 +132,8 @@
         /* Корзина */
         .trash-can {
             position: fixed;
-            bottom: 130px; 
-            right: 20px;
+            bottom: 40px; /* Опустили на уровень кнопки захвата */
+            right: 30px;  /* Чуть отодвинули от края */
             width: 60px; height: 60px;
             background: #ff3b30;
             border-radius: 50%;
@@ -427,7 +426,6 @@
         let harmonyMode = 0; 
         let isHarmonyOpen = false;
 
-        // Переменные для Drag & Drop
         let draggedElement = null;
         let draggedIndex = -1;
 
@@ -642,21 +640,17 @@
                 el.className = 'history-item';
                 el.style.backgroundColor = item.hex;
                 
-                // Обычный клик
                 el.addEventListener('click', (e) => {
-                    // Игнорируем клик, если это было перетаскивание
                     if (el.dataset.isDragging === 'true') return;
                     openModal(item, index);
                 });
 
-                // Логика Long-Press и Drag & Drop
                 setupDragAndDrop(el, index);
 
                 historyStrip.appendChild(el);
             });
         }
 
-        // --- ЛОГИКА DRAG & DROP ---
         function setupDragAndDrop(el, index) {
             let startX, startY, startLeft, startTop;
             let timer = null;
@@ -668,11 +662,10 @@
                 startX = e.clientX;
                 startY = e.clientY;
                 
-                // Ждем 400мс для активации перетаскивания
                 timer = setTimeout(() => {
                     isDragging = true;
                     el.dataset.isDragging = 'true';
-                    if (navigator.vibrate) navigator.vibrate(40); // Вибро-отклик
+                    if (navigator.vibrate) navigator.vibrate(40);
                     
                     const rect = el.getBoundingClientRect();
                     startLeft = rect.left;
@@ -687,7 +680,6 @@
 
                 const onPointerMove = (moveEvent) => {
                     if (!isDragging) {
-                        // Если сдвинули палец до срабатывания таймера — отменяем Long-Press (значит юзер скроллит)
                         if (Math.abs(moveEvent.clientX - startX) > 10 || Math.abs(moveEvent.clientY - startY) > 10) {
                             clearTimeout(timer);
                         }
@@ -702,7 +694,6 @@
                     el.style.left = (startLeft + dx) + 'px';
                     el.style.top = (startTop + dy) + 'px';
 
-                    // Проверяем, находится ли палец над корзиной
                     const trashRect = trashCan.getBoundingClientRect();
                     if (
                         moveEvent.clientX >= trashRect.left && moveEvent.clientX <= trashRect.right &&
@@ -725,13 +716,11 @@
                         );
 
                         if (isOverTrash) {
-                            // УДАЛЯЕМ ЦВЕТ
                             if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
                             history.splice(index, 1);
                             saveHistory();
                             renderHistory();
                         } else {
-                            // ВОЗВРАЩАЕМ НА МЕСТО
                             el.style.transition = 'all 0.2s ease';
                             el.style.left = startLeft + 'px';
                             el.style.top = startTop + 'px';
@@ -748,12 +737,10 @@
                         trashCan.classList.remove('hover');
                     }
                     
-                    // Убираем слушатели
                     document.removeEventListener('pointermove', onPointerMove);
                     document.removeEventListener('pointerup', onPointerUp);
                     document.removeEventListener('pointercancel', onPointerUp);
                     
-                    // Сбрасываем флаг перетаскивания (с задержкой, чтобы click не сработал)
                     setTimeout(() => { el.dataset.isDragging = 'false'; }, 50);
                     isDragging = false;
                 };
