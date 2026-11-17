@@ -1,4 +1,4 @@
-const CACHE_NAME = 'color-scan-v6'; // Обновили версию для сброса кэша
+const CACHE_NAME = 'color-scan-v7'; // Обязательно поднимаем версию
 const ASSETS = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', (e) => {
