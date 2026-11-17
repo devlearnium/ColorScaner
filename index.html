@@ -25,7 +25,7 @@
         }
 
         body {
-            background-color: #000; /* Черный фон, пока грузится камера */
+            background-color: #000;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             color: var(--text-color);
             height: 100vh;
@@ -42,17 +42,14 @@
             font-size: 14px; z-index: 9999;
         }
 
-        /* Камера на весь экран */
         #camera-stream {
-            width: 100%;
-            height: 100%;
+            width: 100%; height: 100%;
             object-fit: cover;
             position: absolute;
             top: 0; left: 0;
             z-index: 1;
         }
 
-        /* Прицел по центру */
         .crosshair {
             position: absolute;
             top: 50%; left: 50%;
@@ -62,7 +59,7 @@
             border-radius: 16px;
             z-index: 2;
             pointer-events: none;
-            box-shadow: 0 0 0 4000px rgba(0,0,0,0.3); /* Затемнение вокруг */
+            box-shadow: 0 0 0 4000px rgba(0,0,0,0.3);
         }
         
         .crosshair::after {
@@ -75,7 +72,6 @@
             border-radius: 50%;
         }
 
-        /* Нижняя панель управления */
         .bottom-ui {
             position: absolute;
             bottom: 0; left: 0; right: 0;
@@ -88,7 +84,6 @@
             gap: 20px;
         }
 
-        /* История цветов (Горизонтальный скролл) */
         .history-strip {
             display: flex;
             gap: 12px;
@@ -102,8 +97,7 @@
 
         .history-item {
             flex-shrink: 0;
-            width: 60px;
-            height: 60px;
+            width: 60px; height: 60px;
             border-radius: 16px;
             border: 2px solid rgba(255,255,255,0.3);
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
@@ -112,10 +106,8 @@
         }
         .history-item:active { transform: scale(0.9); }
 
-        /* Кнопка спуска */
         .capture-btn {
-            width: 76px;
-            height: 76px;
+            width: 76px; height: 76px;
             border-radius: 50%;
             background-color: #fff;
             border: 5px solid rgba(255,255,255,0.3);
@@ -152,17 +144,18 @@
             display: flex;
             flex-direction: column;
             gap: 15px;
-            max-height: 85vh;
+            max-height: 90vh;
+            overflow-y: auto;
         }
         .modal-overlay.active .color-card {
             transform: translateY(0);
         }
 
-        /* Верхняя часть карточки (Цвет) */
         .card-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
+            gap: 15px;
         }
 
         .color-preview-box {
@@ -174,13 +167,18 @@
             align-items: center;
             font-size: 24px;
             font-weight: 800;
-            color: #fff; /* Динамически меняется */
+            color: #fff;
             letter-spacing: 1px;
             box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
-            margin-right: 15px;
         }
 
-        .share-btn {
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .icon-btn {
             width: 54px; height: 54px;
             border-radius: 50%;
             background: var(--element-color);
@@ -189,11 +187,11 @@
             justify-content: center;
             align-items: center;
             cursor: pointer;
-            flex-shrink: 0;
+            transition: background 0.2s;
         }
-        .share-btn svg { width: 24px; height: 24px; fill: var(--text-color); }
+        .icon-btn:active { background: #e0e0e0; }
+        .icon-btn svg { width: 24px; height: 24px; fill: var(--text-color); }
 
-        /* Поле для названия */
         .color-name-input {
             width: 100%;
             padding: 16px;
@@ -209,7 +207,42 @@
         .color-name-input:focus { border-color: var(--accent); }
         .color-name-input::placeholder { color: #aaa; font-weight: 400; }
 
-        /* Форматы цветов */
+        /* Блок гармонии */
+        .harmony-grid {
+            display: none;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 5px;
+            padding: 10px;
+            background: var(--element-color);
+            border-radius: 16px;
+            animation: fadeIn 0.3s;
+        }
+        .harmony-grid.active {
+            display: grid;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .harmony-item {
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 6px;
+            font-size: 10px;
+            font-weight: 800;
+            color: #fff;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .harmony-item:active { transform: scale(0.95); }
+
         .formats-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -263,9 +296,7 @@
     <div class="crosshair"></div>
 
     <div class="bottom-ui">
-        <div class="history-strip" id="historyStrip">
-            <!-- История заполняется через JS -->
-        </div>
+        <div class="history-strip" id="historyStrip"></div>
         <button class="capture-btn" id="captureBtn"></button>
     </div>
 
@@ -274,10 +305,17 @@
         <div class="color-card">
             <div class="card-header">
                 <div class="color-preview-box" id="modalColorBox">#FFFFFF</div>
-                <button class="share-btn" id="shareBtn">
-                    <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
-                </button>
+                <div class="action-buttons">
+                    <button class="icon-btn" id="harmonyBtn" title="Подобрать цвета">
+                        <svg viewBox="0 0 24 24"><path d="M12 2C6.49 2 2 6.49 2 12s4.49 10 10 10c1.38 0 2.5-1.12 2.5-2.5 0-.61-.23-1.2-.64-1.67-.08-.1-.13-.21-.13-.33 0-.28.22-.5.5-.5H16c3.31 0 6-2.69 6-6 0-4.96-4.49-9-10-9zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 8 6.5 8 8 8.67 8 9.5 7.33 11 6.5 11zm3-4C8.67 7 8 6.33 8 5.5S8.67 4 9.5 4s1.5.67 1.5 1.5S10.33 7 9.5 7zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 4 14.5 4s1.5.67 1.5 1.5S15.33 7 14.5 7zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 8 17.5 8s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+                    </button>
+                    <button class="icon-btn" id="shareBtn">
+                        <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+                    </button>
+                </div>
             </div>
+
+            <div class="harmony-grid" id="harmonyGrid"></div>
 
             <input type="text" class="color-name-input" id="colorNameInput" placeholder="Название цвета (необязательно)">
 
@@ -295,7 +333,7 @@
                     <span class="format-value" id="valCmyk">0, 0, 0, 0</span>
                 </div>
                 <div class="format-item">
-                    <span class="format-label">Pantone (ближайший)</span>
+                    <span class="format-label">Pantone</span>
                     <span class="format-value" id="valPantone">White</span>
                 </div>
             </div>
@@ -331,13 +369,16 @@
         const valPantone = document.getElementById('valPantone');
         const copyBtn = document.getElementById('copyBtn');
         const shareBtn = document.getElementById('shareBtn');
+        const harmonyBtn = document.getElementById('harmonyBtn');
+        const harmonyGrid = document.getElementById('harmonyGrid');
         const colorNameInput = document.getElementById('colorNameInput');
 
         let currentColor = null;
         let history = JSON.parse(localStorage.getItem('colorHistory')) || [];
         let activeHistoryIndex = -1;
+        let harmonyMode = 0; 
+        let isHarmonyOpen = false;
 
-        // База для поиска ближайшего Pantone
         const pantoneDb = [
             { name: 'White', hex: '#FFFFFF' }, { name: 'Black', hex: '#000000' },
             { name: 'Red 032', hex: '#EF3340' }, { name: 'Blue 072', hex: '#10069F' },
@@ -346,7 +387,6 @@
             { name: 'Reflex Blue', hex: '#001489' }, { name: 'Rhodamine Red', hex: '#E10098' }
         ];
 
-        // Инициализация камеры
         async function initCamera() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
@@ -358,7 +398,6 @@
             }
         }
 
-        // Конвертация RGB в CMYK
         function rgbToCmyk(r, g, b) {
             let c = 1 - (r / 255), m = 1 - (g / 255), y = 1 - (b / 255);
             let k = Math.min(c, m, y);
@@ -370,11 +409,9 @@
             return [c, m, y, k];
         }
 
-        // Поиск ближайшего Pantone
         function getClosestPantone(r, g, b) {
             let minDist = Infinity;
             let closest = 'Неизвестно';
-            
             pantoneDb.forEach(p => {
                 let pr = parseInt(p.hex.slice(1,3), 16);
                 let pg = parseInt(p.hex.slice(3,5), 16);
@@ -385,7 +422,134 @@
             return closest;
         }
 
-        // Захват цвета
+        function rgbToHsl(r, g, b) {
+            r /= 255; g /= 255; b /= 255;
+            let max = Math.max(r, g, b), min = Math.min(r, g, b);
+            let h, s, l = (max + min) / 2;
+            if (max === min) {
+                h = s = 0; 
+            } else {
+                let d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                switch (max) {
+                    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                    case g: h = (b - r) / d + 2; break;
+                    case b: h = (r - g) / d + 4; break;
+                }
+                h /= 6;
+            }
+            return [h * 360, s * 100, l * 100];
+        }
+
+        function hslToRgb(h, s, l) {
+            h /= 360; s /= 100; l /= 100;
+            let r, g, b;
+            if (s === 0) {
+                r = g = b = l;
+            } else {
+                const hue2rgb = (p, q, t) => {
+                    if (t < 0) t += 1;
+                    if (t > 1) t -= 1;
+                    if (t < 1/6) return p + (q - p) * 6 * t;
+                    if (t < 1/2) return q;
+                    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                    return p;
+                };
+                const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                const p = 2 * l - q;
+                r = hue2rgb(p, q, h + 1/3);
+                g = hue2rgb(p, q, h);
+                b = hue2rgb(p, q, h - 1/3);
+            }
+            return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+        }
+
+        function rgbToHex(r, g, b) {
+            return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('').toUpperCase();
+        }
+
+        function generateHarmonyColors(r, g, b, mode) {
+            let [h, s, l] = rgbToHsl(r, g, b);
+            let colors = [];
+
+            if (mode === 0) { // Аналоговые
+                let offsets = [-30, -15, 15, 30];
+                offsets.forEach(off => {
+                    let newH = (h + off + 360) % 360;
+                    colors.push(hslToRgb(newH, s, l));
+                });
+            } 
+            else if (mode === 1) { // Комплементарные
+                let baseH = (h + 180) % 360;
+                let offsets = [0, 15, -15, 30];
+                offsets.forEach(off => {
+                    let newH = (baseH + off + 360) % 360;
+                    let newL = Math.max(20, Math.min(80, l + (off > 0 ? 10 : -10)));
+                    colors.push(hslToRgb(newH, s, newL));
+                });
+            } 
+            else if (mode === 2) { // Триада
+                let h1 = (h + 120) % 360;
+                let h2 = (h + 240) % 360;
+                colors.push(hslToRgb(h, s, l));
+                colors.push(hslToRgb(h1, s, l));
+                colors.push(hslToRgb(h2, s, l));
+                colors.push(hslToRgb(h1, s, Math.max(20, l - 20)));
+            } 
+            else if (mode === 3) { // Монохромные
+                let newS = Math.max(10, s - 20);
+                colors.push(hslToRgb(h, newS, Math.min(90, l + 20)));
+                colors.push(hslToRgb(h, s, l));
+                colors.push(hslToRgb(h, Math.min(100, s + 20), Math.max(10, l - 20)));
+                colors.push(hslToRgb(h, s, Math.max(10, l - 40)));
+            }
+            
+            return colors.map(c => rgbToHex(c[0], c[1], c[2]));
+        }
+
+        function renderHarmony() {
+            if (!currentColor) return;
+            harmonyGrid.innerHTML = '';
+            
+            const colorsHex = generateHarmonyColors(currentColor.rgb[0], currentColor.rgb[1], currentColor.rgb[2], harmonyMode);
+            
+            colorsHex.forEach(hex => {
+                const el = document.createElement('div');
+                el.className = 'harmony-item';
+                el.style.backgroundColor = hex;
+                el.textContent = hex.replace('#', '');
+                
+                const r = parseInt(hex.slice(1,3), 16);
+                const g = parseInt(hex.slice(3,5), 16);
+                const b = parseInt(hex.slice(5,7), 16);
+                const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+                el.style.color = brightness > 125 ? '#000000' : '#ffffff';
+                el.style.textShadow = brightness > 125 ? 'none' : '0 1px 2px rgba(0,0,0,0.5)';
+
+                el.addEventListener('click', () => {
+                    navigator.clipboard.writeText(hex);
+                    if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
+                    el.textContent = 'OK';
+                    setTimeout(() => { el.textContent = hex.replace('#', ''); }, 1000);
+                });
+
+                harmonyGrid.appendChild(el);
+            });
+        }
+
+        harmonyBtn.addEventListener('click', () => {
+            if (navigator.vibrate) navigator.vibrate(20);
+            
+            if (!isHarmonyOpen) {
+                isHarmonyOpen = true;
+                harmonyGrid.classList.add('active');
+                harmonyMode = 0;
+            } else {
+                harmonyMode = (harmonyMode + 1) % 4;
+            }
+            renderHarmony();
+        });
+
         captureBtn.addEventListener('click', () => {
             if (navigator.vibrate) navigator.vibrate(30);
 
@@ -393,7 +557,6 @@
             canvas.height = video.videoHeight;
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-            // Берем цвет из центра (3x3 пикселя для точности)
             const cx = Math.floor(canvas.width / 2);
             const cy = Math.floor(canvas.height / 2);
             const imgData = ctx.getImageData(cx - 2, cy - 2, 5, 5).data;
@@ -404,26 +567,21 @@
             }
             r = Math.round(r/count); g = Math.round(g/count); b = Math.round(b/count);
 
-            const hex = '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('').toUpperCase();
+            const hex = rgbToHex(r, g, b);
             const cmyk = rgbToCmyk(r, g, b);
             const pantone = getClosestPantone(r, g, b);
 
-            const colorObj = {
-                hex, rgb: [r, g, b], cmyk, pantone,
-                name: '', timestamp: Date.now()
-            };
+            const colorObj = { hex, rgb: [r, g, b], cmyk, pantone, name: '', timestamp: Date.now() };
 
             currentColor = colorObj;
             history.unshift(colorObj);
-            if (history.length > 50) history.pop(); // Ограничим базу 50 цветами, чтобы не тормозило
+            if (history.length > 50) history.pop();
             saveHistory();
             renderHistory();
             openModal(colorObj);
         });
 
-        function saveHistory() {
-            localStorage.setItem('colorHistory', JSON.stringify(history));
-        }
+        function saveHistory() { localStorage.setItem('colorHistory', JSON.stringify(history)); }
 
         function renderHistory() {
             historyStrip.innerHTML = '';
@@ -440,10 +598,14 @@
             currentColor = colorObj;
             activeHistoryIndex = index;
 
+            isHarmonyOpen = false;
+            harmonyMode = 0;
+            harmonyGrid.classList.remove('active');
+            harmonyGrid.innerHTML = '';
+
             modalColorBox.style.backgroundColor = colorObj.hex;
             modalColorBox.textContent = colorObj.hex;
             
-            // Контрастный текст (черный или белый)
             const brightness = (colorObj.rgb[0] * 299 + colorObj.rgb[1] * 587 + colorObj.rgb[2] * 114) / 1000;
             modalColorBox.style.color = brightness > 125 ? '#000' : '#fff';
 
@@ -456,7 +618,6 @@
             colorModal.classList.add('active');
         }
 
-        // Сохранение названия при вводе
         colorNameInput.addEventListener('input', (e) => {
             if (currentColor) {
                 currentColor.name = e.target.value;
@@ -467,12 +628,10 @@
             }
         });
 
-        // Закрытие по клику вне карточки
         colorModal.addEventListener('click', (e) => {
             if (e.target === colorModal) colorModal.classList.remove('active');
         });
 
-        // Копирование
         copyBtn.addEventListener('click', () => {
             navigator.clipboard.writeText(currentColor.hex);
             if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
@@ -480,25 +639,23 @@
             setTimeout(() => { copyBtn.textContent = 'Копировать HEX'; }, 1500);
         });
 
-        // Генерация картинки для шаринга
         shareBtn.addEventListener('click', async () => {
             if (!currentColor) return;
             if (navigator.vibrate) navigator.vibrate(20);
 
-            // Создаем холст для картинки 600x800
             const shareCanvas = document.createElement('canvas');
             shareCanvas.width = 600;
-            shareCanvas.height = 800;
+            shareCanvas.height = 850; // Увеличили высоту, чтобы влезли гармонии
             const sCtx = shareCanvas.getContext('2d');
 
-            // Фон
+            // Белый фон
             sCtx.fillStyle = '#ffffff';
-            sCtx.fillRect(0, 0, 600, 800);
+            sCtx.fillRect(0, 0, 600, 850);
 
-            // Цветной блок
+            // Основной цветной блок
             sCtx.fillStyle = currentColor.hex;
             sCtx.beginPath();
-            sCtx.roundRect(40, 40, 520, 400, 30);
+            sCtx.roundRect(40, 40, 520, 320, 30);
             sCtx.fill();
 
             // Текст HEX на цветном фоне
@@ -506,39 +663,66 @@
             sCtx.fillStyle = brightness > 125 ? '#000000' : '#ffffff';
             sCtx.font = 'bold 48px sans-serif';
             sCtx.textAlign = 'center';
-            sCtx.fillText(currentColor.hex, 300, 260);
+            sCtx.fillText(currentColor.hex, 300, 210);
 
-            // Текст на белом фоне
+            // --- БЛОК ДОПОЛНИТЕЛЬНЫХ ЦВЕТОВ (ГАРМОНИЯ) ---
+            let harmonyColors = generateHarmonyColors(currentColor.rgb[0], currentColor.rgb[1], currentColor.rgb[2], harmonyMode);
+            
+            let boxSize = 115;
+            let boxGap = 15;
+            let totalWidth = (boxSize * 4) + (boxGap * 3); // 460 + 45 = 505
+            let startX = (600 - totalWidth) / 2; // 47.5
+            let startY = 390;
+
+            harmonyColors.forEach((hex, i) => {
+                let x = startX + i * (boxSize + boxGap);
+                sCtx.fillStyle = hex;
+                sCtx.beginPath();
+                sCtx.roundRect(x, startY, boxSize, boxSize, 16);
+                sCtx.fill();
+
+                // Подпись HEX внутри квадратика
+                let r = parseInt(hex.slice(1,3), 16);
+                let g = parseInt(hex.slice(3,5), 16);
+                let b = parseInt(hex.slice(5,7), 16);
+                let br = (r * 299 + g * 587 + b * 114) / 1000;
+                
+                sCtx.fillStyle = br > 125 ? '#000000' : '#ffffff';
+                sCtx.font = 'bold 12px sans-serif';
+                sCtx.textAlign = 'center';
+                sCtx.fillText(hex.replace('#', ''), x + boxSize/2, startY + boxSize - 12);
+            });
+            // ---------------------------------------------
+
+            // Текст на белом фоне (Название)
             sCtx.fillStyle = '#1a1a1a';
             sCtx.textAlign = 'left';
             sCtx.font = 'bold 32px sans-serif';
-            sCtx.fillText(currentColor.name || 'Мой цвет', 40, 500);
+            sCtx.fillText(currentColor.name || 'Мой цвет', 40, 570);
 
+            // Форматы
             sCtx.font = '22px sans-serif';
             sCtx.fillStyle = '#888888';
-            sCtx.fillText(`RGB: ${currentColor.rgb.join(', ')}`, 40, 550);
-            sCtx.fillText(`CMYK: ${currentColor.cmyk.join(', ')}`, 40, 590);
-            sCtx.fillText(`Pantone: ${currentColor.pantone}`, 40, 630);
+            sCtx.fillText(`RGB: ${currentColor.rgb.join(', ')}`, 40, 620);
+            sCtx.fillText(`CMYK: ${currentColor.cmyk.join(', ')}`, 40, 660);
+            sCtx.fillText(`Pantone: ${currentColor.pantone}`, 40, 700);
 
-            // Подпись
+            // Футер
             sCtx.font = '18px sans-serif';
             sCtx.fillStyle = '#cccccc';
-            sCtx.fillText('Создано в Color Scanner', 40, 750);
+            sCtx.fillText('Создано в Color Scanner', 40, 800);
 
-            // Конвертация в файл и шеринг
             shareCanvas.toBlob(async (blob) => {
                 const file = new File([blob], 'color.png', { type: 'image/png' });
                 
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
                     try {
-                        await navigator.share({
-                            files: [file],
-                            title: 'Цвет',
-                            text: `Смотри какой цвет я нашел! ${currentColor.hex}`
+                        await navigator.share({ 
+                            files: [file], 
+                            title: 'Цвет', 
+                            text: `Цвет - ${currentColor.hex}` // Текст изменен по твоей просьбе
                         });
-                    } catch (err) {
-                        console.log('Ошибка шаринга', err);
-                    }
+                    } catch (err) {}
                 } else {
                     alert('Ваш браузер не поддерживает отправку картинок. HEX скопирован в буфер.');
                     navigator.clipboard.writeText(currentColor.hex);
@@ -546,7 +730,6 @@
             }, 'image/png');
         });
 
-        // Инициализация при старте
         initCamera();
         renderHistory();
     </script>
